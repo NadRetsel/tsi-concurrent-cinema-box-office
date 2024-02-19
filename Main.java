@@ -13,10 +13,11 @@ public class Main {
         for(Customer customer : customers)
         {
             Thread customerThread = new Thread(customer);
-            customerThread.start();
             customerThreads.add(customerThread);
         }
 
+
+        for(Thread thread : customerThreads) thread.start();
 
         for(Thread thread : customerThreads) thread.join();
 
@@ -36,11 +37,14 @@ public class Main {
 
     public static LinkedList<Customer> createCustomers(Screening screening, int totalCustomers) {
         LinkedList<Customer> customers = new LinkedList<>();
-        LinkedList<String> desiredSeats = new LinkedList<>(Arrays.asList(new String[]{"A 1", "B 1", "C 1", "D 1", "E 1"}));
 
         for(int i = 0; i < totalCustomers; ++i)
         {
-            Customer customer = new Customer((i+1) + "", screening, desiredSeats);
+            Customer customer = new Customer(
+                    String.valueOf(i+1),
+                    screening,
+                    new LinkedList<>(Arrays.asList("A 1", "B 1", "C 1", "D 1", "E 1", "F 1", "G 1", "H 1", "I 1"))
+            );
             customers.add(customer);
         }
 

@@ -1,5 +1,7 @@
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Customer implements Runnable {
 
@@ -7,11 +9,20 @@ public class Customer implements Runnable {
     private Screening screening;
     private LinkedList<Seat> seatsBooked;
     private LinkedList<String> seatsDesired;
+    private int ticketsDesired;
 
     public Customer(String name, Screening screening, LinkedList<String> seatsDesired) {
+        this(name, screening, seatsDesired, seatsDesired.size());
+    }
+
+    public Customer(String name, Screening screening, LinkedList<String> seatsDesired, int ticketsDesired) {
         this.name = name;
         this.screening = screening;
+
+        Collections.shuffle(seatsDesired);
         this.seatsDesired = seatsDesired;
+
+        this.ticketsDesired = seatsDesired.size();
 
         this.seatsBooked = new LinkedList<>();
     }
@@ -37,30 +48,43 @@ public class Customer implements Runnable {
 
     public void run() {
 
-        for(String seatName : this.seatsDesired)
+        while(this.getSeatsBooked().size() != this.ticketsDesired
+                && this.screening.getTicketsRemaining() > 0)
         {
-            Seat seat = this.screening.getSeat(seatName);
-            if(!seat.isAvailable()) continue;
 
-            System.out.println("Customer " + this.name + ": Attempting to book seat [" + seatName + "].");
+
+            Seat seat = !this.seatsDesired.isEmpty()
+                    ? this.screening.getSeat(this.seatsDesired.getFirst())
+                    : this.screening.getRandomSeat();
+
+            if (!this.seatsDesired.isEmpty()) this.seatsDesired.removeFirst();
+
+
+            System.out.println("Customer " + this.name + ": Attempting to book seat [" + seat.getName() + "].");
             Seat bookedSeat = this.screening.bookSeat(seat);
 
-
-            if(null == bookedSeat) {
-                System.out.println("Customer " + this.name + ": Seat [" + seatName + "] is already booked.");
+            if(null == bookedSeat)
+            {
+                System.out.println("Customer " + this.name + ": Seat [" + seat.getName() + "] is already booked.");
                 continue;
             }
 
             this.seatsBooked.add(bookedSeat);
-            System.out.println("Customer " + this.name + ": Booked seat [" + seatName + "].");
-
+            System.out.println("Customer " + this.name + ": Booked seat [" + seat.getName() + "].");
         }
+
+
+
+
+
+
+
     }
 
 
     public void printCustomer() {
         System.out.println("Tickets booked by Customer " + this.name);
-        System.out.println(Arrays.toString(seatsBooked.stream()
+        System.out.println(Arrays.toString(this.seatsBooked.stream()
                 .map(Seat::getName)
                 .toArray()));
     }

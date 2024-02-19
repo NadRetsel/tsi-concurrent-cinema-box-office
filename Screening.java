@@ -1,14 +1,21 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Screening {
 
     private final String[] ALPHABET = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
     private HashMap<String, Seat[]> allSeats;
 
+    private List<Seat> seatsRemaining;
+    private int ticketsRemaining;
+
 
     public Screening() {
         this.allSeats = new HashMap<>();
+        this.seatsRemaining = new LinkedList<>();
+    }
+
+    public int getTicketsRemaining() {
+        return this.ticketsRemaining;
     }
 
     public void createSeats(int[] seatingArrangement) {
@@ -22,9 +29,13 @@ public class Screening {
             for(int seatInd = 0; seatInd < seats.length; ++seatInd)
             {
                 String seatName = rowLetter + " " + (seatInd + 1);
-                seats[seatInd] = new Seat(seatName, true);
+                Seat seat = new Seat(seatName, true);
+                seats[seatInd] = seat;
+
+                this.seatsRemaining.add(seat);
             }
 
+            this.ticketsRemaining += seatsPerRow;
             this.allSeats.put(rowLetter, seats);
         }
     }
@@ -42,6 +53,12 @@ public class Screening {
         }
     }
 
+
+    public Seat getRandomSeat() {
+        return this.seatsRemaining.get(new Random().nextInt(this.ticketsRemaining));
+    }
+
+
     public Seat getSeat(String seatName) {
 
         String[] seatInfo = seatName.split(" ");
@@ -52,11 +69,14 @@ public class Screening {
     }
 
 
-    public Seat bookSeat(Seat seat)
+    public synchronized Seat bookSeat(Seat seat)
     {
         if(!seat.isAvailable()) return null;
 
+        this.ticketsRemaining -= 1;
+        this.seatsRemaining.remove(seat);
         seat.setAvailable(false);
+
         return seat;
     }
 
